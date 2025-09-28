@@ -23,14 +23,26 @@ public class Select {
 
     private int selectRecursive(int[] arr, int left, int right, int k) {
         metrics.incrementDepth();
+        ArrayUtils.checkArrayBounds(arr, left, right);
 
         if (left == right) {
             metrics.decrementDepth();
             return arr[left];
         }
 
+        // Use simple median for small arrays
+        if (right - left + 1 <= 5) {
+            findMedian(arr, left, right); // This sorts the small array
+            metrics.decrementDepth();
+            return arr[left + k];
+        }
+
         // Find median of medians as pivot
         int pivotIndex = medianOfMedians(arr, left, right);
+        // Ensure pivotIndex is within bounds
+        if (pivotIndex < left || pivotIndex > right) {
+            pivotIndex = left + (right - left) / 2;
+        }
         pivotIndex = ArrayUtils.partition(arr, left, right, pivotIndex, metrics);
 
         // Get the rank of pivot
@@ -53,25 +65,32 @@ public class Select {
         int n = right - left + 1;
         
         // For small arrays, just return middle element
-        if (n < GROUP_SIZE) {
+        if (n <= GROUP_SIZE) {
             return left + n/2;
         }
 
         // Divide array into groups of 5 and find medians
         int numGroups = (n + GROUP_SIZE - 1) / GROUP_SIZE;
+        int lastValidGroup = left + numGroups - 1;
+        
+        // Process each complete group of 5
         for (int i = 0; i < numGroups; i++) {
             int groupLeft = left + i * GROUP_SIZE;
+            if (groupLeft > right) break; // Stop if we've gone past array bounds
+            
             int groupRight = Math.min(groupLeft + GROUP_SIZE - 1, right);
             
             // Find median of current group
             int median = findMedian(arr, groupLeft, groupRight);
             
-            // Move median to the beginning
-            ArrayUtils.swap(arr, left + i, median);
+            // Move median to the beginning of the array
+            if (median <= right) { // Safety check
+                ArrayUtils.swap(arr, left + i, median);
+            }
         }
 
-        // Recursively find median of medians
-        return selectRecursive(arr, left, left + numGroups - 1, numGroups/2);
+        // Recursively find median of medians on the valid portion
+        return selectRecursive(arr, left, lastValidGroup, (lastValidGroup - left) / 2);
     }
 
     private int findMedian(int[] arr, int left, int right) {
