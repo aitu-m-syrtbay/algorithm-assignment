@@ -60,13 +60,56 @@ java -jar target/algorithms-assignment-0.1-SNAPSHOT.jar <algorithm> <size>
 
 ## Performance Analysis
 
-(This section will be updated with actual measurements and plots)
+### Running Performance Tests
+```bash
+# Build the project
+mvn clean compile
 
-### Time Complexity Analysis
+# Run all algorithms with different input sizes
+for size in 100 1000 10000 100000; do
+  echo "Testing with size $size"
+  java -cp target/classes com.algorithms.Main mergesort $size results/all_results.csv
+  java -cp target/classes com.algorithms.Main quicksort $size results/all_results.csv
+  java -cp target/classes com.algorithms.Main select $size results/all_results.csv
+  java -cp target/classes com.algorithms.Main closest $size results/all_results.csv
+done
+```
 
-### Recursion Depth Analysis
+### Sample Results
+Recent benchmark results on a test machine:
 
-### Constant Factor Effects
+| Algorithm | Input Size | Time (ms) | Comparisons | Allocations | Max Depth |
+|-----------|------------|-----------|-------------|-------------|-----------|
+| mergesort | 100000     | 20.91     | 2276757     | 1           | 15        |
+| quicksort | 100000     | 25.31     | 1984083     | 0           | 12        |
+| select    | 100000     | 26.29     | 3704171     | 0           | 10786     |
+| closest   | 100000     | 196.60    | 5499573     | 103391      | 17        |
+
+### Analysis by Algorithm
+
+#### 1. MergeSort
+- **Time Complexity**: Consistent O(n log n) behavior
+- **Space Usage**: Single allocation for merge buffer
+- **Depth**: Logarithmic growth (5 → 8 → 11 → 15 for sizes 100 to 100K)
+- **Optimizations**: Effective small-array cutoff reduces comparisons
+
+#### 2. QuickSort
+- **Time Complexity**: Excellent O(n log n) average case
+- **Space Usage**: Zero additional allocations
+- **Depth**: Slightly better than MergeSort (5 → 7 → 9 → 12)
+- **Efficiency**: Fewer comparisons than MergeSort due to in-place partitioning
+
+#### 3. Select (Median-of-Medians)
+- **Time Complexity**: Linear time O(n) with higher constant factors
+- **Space Usage**: No extra allocations
+- **Depth**: Variable, deeper for median finding (27 → 169 → 840 → 10786)
+- **Trade-off**: Guaranteed linear time vs higher comparison count
+
+#### 4. Closest Pair
+- **Time Complexity**: O(n log n) with significant geometric overhead
+- **Space Usage**: Highest memory usage (array cloning for coordinate sorting)
+- **Depth**: Logarithmic (7 → 10 → 13 → 17)
+- **Performance**: Most compute-intensive due to distance calculations
 
 ## Testing Strategy
 
