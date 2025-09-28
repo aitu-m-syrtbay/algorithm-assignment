@@ -11,6 +11,15 @@ import java.util.List;
  * Collects and writes algorithm performance metrics to CSV files
  */
 public class MetricsCollector {
+    private static final String[] DEFAULT_HEADERS = {
+        "Algorithm",
+        "InputSize",
+        "ExecutionTime(ms)",
+        "Comparisons",
+        "Allocations",
+        "MaxDepth"
+    };
+    
     private final List<String[]> measurements;
     private final String[] headers;
 
@@ -26,6 +35,13 @@ public class MetricsCollector {
         measurements.add(values);
     }
 
+    public String[] getLastMeasurement() {
+        if (measurements.isEmpty()) {
+            return null;
+        }
+        return measurements.get(measurements.size() - 1);
+    }
+
     public void writeToCSV(Path filePath) throws IOException {
         try (PrintWriter writer = new PrintWriter(new FileWriter(filePath.toFile()))) {
             // Write headers
@@ -36,6 +52,10 @@ public class MetricsCollector {
                 writer.println(String.join(",", row));
             }
         }
+    }
+
+    public static String[] getHeaders() {
+        return DEFAULT_HEADERS;
     }
 
     public static MetricsCollector createDefaultCollector() {
